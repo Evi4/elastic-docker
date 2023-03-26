@@ -1,0 +1,71 @@
+version: "2.2"
+
+services:
+  apache:
+    image: httpd:latest
+    container_name: 'apache'
+    user: root
+    ports:
+      - '8080:80'
+    volumes:
+      # Pour customiser le fichier de configuration d'Apache :
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      # Pour partager les fichiers de logs d'Apache dans le volume
+      - logs:/usr/local/apache2/logs
+
+  filebeat:
+    image: elastic/filebeat:8.6.2
+    container_name: 'filebeat'
+    user: root
+    volumes:
+      - logs:/usr/share/filebeat/data
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    command: [ "-e" ]
+    depends_on:
+      - apache
+      - elasticsearch
+    networks:
+      - elk_network
+
+  elasticsearch:
+    image: elasticsearch:8.6.2
+    container_name: 'elasticsearch'
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    environment:
+      - cluster.name=cluster
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - xpack.security.enabled=false # to reach through http
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - elk_network
+
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: kibana:8.6.2
+    ports:
+      - 5601:5601
+    environment:
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    networks:
+      - elk_network
+    command: sh -c './bin/kibana-plugin install https://github.com/bitsensor/elastalert-kibana-plugin/releases/download/1.0.4/elastalert-kibana-plugin-1.0.4-7.0.1.zip && exec /usr/local/bin/kibana-docker'
+
+volumes:
+  logs:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  elk_network:
+
