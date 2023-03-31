@@ -2,7 +2,7 @@ version: "2.2"
 
 services:
   apache:
-    image: httpd:latest
+    image: httpd:2.4.53
     container_name: 'apache'
     user: root
     ports:
@@ -58,7 +58,6 @@ services:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
     networks:
       - elk_network
-    command: sh -c './bin/kibana-plugin install https://github.com/bitsensor/elastalert-kibana-plugin/releases/download/1.0.4/elastalert-kibana-plugin-1.0.4-7.0.1.zip && exec /usr/local/bin/kibana-docker'
 
 volumes:
   logs:

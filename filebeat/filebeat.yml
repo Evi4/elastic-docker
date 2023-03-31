@@ -4,12 +4,10 @@ filebeat.inputs:
     - "/usr/share/filebeat/data/apache.log"
     fields:
       apache: true
-    fields_under_root: true
 
 output.elasticsearch:
   hosts:
     - "http://elasticsearch:9200"
-  pipeline: "my-pipeline"
 
 setup.kibana:
   host: "http://kibana:5601"
