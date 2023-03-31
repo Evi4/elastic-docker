@@ -8,6 +8,7 @@ filebeat.inputs:
 output.elasticsearch:
   hosts:
     - "http://elasticsearch:9200"
+  pipeline: "my-pipeline"
 
 setup.kibana:
   host: "http://kibana:5601"
